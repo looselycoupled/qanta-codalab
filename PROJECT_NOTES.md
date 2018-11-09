@@ -1,5 +1,19 @@
-# Setup
 
+
+# Development
+
+## Interactive Bash in Container
+
+You can startup the container with a bash session using the following command.  Once inside your bash session you can start the webserver using the `run.sh` script.
+
+    docker-compose run -it --service-ports  entilzha/quizbowl /bin/bash
+
+As a reminder, you can test a request from outside the container (on your host computer) using HTTPie.
+
+    http POST http://0.0.0.0:4861/api/1.0/quizbowl/act text='Name the the inventor of general relativity and the photoelectric effect'
+
+
+# Setup
 
 ## Python Dependencies
 
