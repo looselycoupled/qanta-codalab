@@ -10,6 +10,15 @@
 #     * you may want to use screen or nohup so you can exit ssh session
 
 
+# Basic Linux Screen Usage
+# Below are the most basic steps for getting started with screen:
+#
+# 1. On the command prompt, type screen.
+# 2. Run the desired program.
+# 3. Use the key sequence Ctrl-a + Ctrl-d to detach from the screen session.
+# 4. Reattach to the screen session by typing screen -r.
+# 5. You can list running screen sessions using screen -ls
+
 import time
 import json
 import random
@@ -39,7 +48,7 @@ warnings.filterwarnings('ignore')
 Run = namedtuple("Run", "epochs n_hidden_units training_size elapsed accuracy batch_size accuracies")
 RUNS = []
 
-path_prefix = ""
+path_prefix = "../../"
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 #===========================================================================
@@ -257,16 +266,16 @@ def evaluate(data_loader, model, device):
 
 
 # Start Training
-n_hidden_units = 2000
+n_hidden_units = 200
 checkpoint = 2
-batch_size = 500
+batch_size = 50
 num_epochs = 1000
 start = time.time()
 
 accuracy = 0
 accuracies = []
 
-data = all_data#[:5000]
+data = all_data[:500]
 
 ans2idx = {}
 counter = 0
