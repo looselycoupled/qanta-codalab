@@ -106,17 +106,7 @@ if __name__ == '__main__':
     stuff = torch.load("lookups.pt")
     word2ind = stuff["word2ind"]
     idx2ans = stuff["idx2ans"]
-
-    train_file = path_prefix + "data/qanta.train.2018.04.18.json"
-
-    def load_data(filename):
-        data = list()
-        with open(filename) as json_data:
-            questions = json.load(json_data)["questions"]
-        return questions
-
-    train_data = load_data(train_file)
-    data = train_data[:500]
+    data = stuff["train_data"]
 
     model = torch.load("dan-qa-aws.pt")
     print(model)
