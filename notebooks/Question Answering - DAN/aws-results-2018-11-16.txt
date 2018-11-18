@@ -1,0 +1,124 @@
+(pytorch_p36) ubuntu@ip-172-30-4-51:~/code$ python dan-qa.py
+loading word embeddings...
+word embeddings loaded
+
+INFO: loading data
+INFO: data loaded
+
+creating DanModel...
+DanModel(
+  (embeddings): Embedding(3000000, 300, padding_idx=0)
+  (linear1): Linear(in_features=300, out_features=2000, bias=True)
+  (linear2): Linear(in_features=2000, out_features=26878, bias=True)
+  (classifier): Sequential(
+    (0): Linear(in_features=300, out_features=2000, bias=True)
+    (1): ReLU()
+    (2): Linear(in_features=2000, out_features=26878, bias=True)
+  )
+  (softmax): Softmax()
+)
+Setup finished in 193 seconds
+
+dev_set is of length 11924
+Epoch: 0, Accuracy: 0.0001677289500168211
+Epoch: 10, Accuracy: 0.009812143575981258
+Epoch: 20, Accuracy: 0.016605166051660514
+Epoch: 30, Accuracy: 0.02339818852733977
+Epoch: 40, Accuracy: 0.03102985575310302
+Epoch: 50, Accuracy: 0.037487420328748744
+Epoch: 60, Accuracy: 0.04386112042938606
+Epoch: 70, Accuracy: 0.050738007380073835
+Epoch: 80, Accuracy: 0.05778262328077821
+Epoch: 90, Accuracy: 0.06340154310634016
+Epoch: 100, Accuracy: 0.06918819188191883
+Epoch: 110, Accuracy: 0.07489097618248908
+Epoch: 120, Accuracy: 0.07967125125796715
+Epoch: 130, Accuracy: 0.08453539080845351
+Epoch: 140, Accuracy: 0.08973498825897352
+Epoch: 150, Accuracy: 0.09527004360952696
+Epoch: 160, Accuracy: 0.09946326735994637
+Epoch: 170, Accuracy: 0.10533378061053333
+Epoch: 180, Accuracy: 0.1110365649111037
+Epoch: 190, Accuracy: 0.11606843341160689
+Epoch: 200, Accuracy: 0.12185508218718555
+Epoch: 210, Accuracy: 0.12730627306273068
+Epoch: 220, Accuracy: 0.13049312311304928
+Epoch: 230, Accuracy: 0.1337638376383764
+Epoch: 240, Accuracy: 0.13627977188862794
+Epoch: 250, Accuracy: 0.1378731969137873
+Epoch: 260, Accuracy: 0.14173096276417307
+Epoch: 270, Accuracy: 0.1439114391143912
+Epoch: 280, Accuracy: 0.14743374706474333
+Epoch: 290, Accuracy: 0.15070446159007045
+Epoch: 300, Accuracy: 0.1543106340154311
+Epoch: 310, Accuracy: 0.16093592754109354
+Epoch: 320, Accuracy: 0.16705803421670584
+Epoch: 330, Accuracy: 0.17200603824220062
+Epoch: 340, Accuracy: 0.177960415967796
+Epoch: 350, Accuracy: 0.18190204629319018
+Epoch: 360, Accuracy: 0.1862629989936263
+Epoch: 370, Accuracy: 0.19154646091915462
+Epoch: 380, Accuracy: 0.1964106004696411
+Epoch: 390, Accuracy: 0.20127474002012746
+Epoch: 400, Accuracy: 0.20748071117074807
+Epoch: 410, Accuracy: 0.21234485072123443
+Epoch: 420, Accuracy: 0.21670580342167056
+Epoch: 430, Accuracy: 0.22249245219724922
+Epoch: 440, Accuracy: 0.22702113384770206
+Epoch: 450, Accuracy: 0.2323884602482389
+Epoch: 460, Accuracy: 0.24052331432405238
+Epoch: 470, Accuracy: 0.24622609862462264
+Epoch: 480, Accuracy: 0.25276752767527677
+Epoch: 490, Accuracy: 0.258470311975847
+Epoch: 500, Accuracy: 0.2641730962764173
+Epoch: 510, Accuracy: 0.269540422676954
+Epoch: 520, Accuracy: 0.27314659510231465
+Epoch: 530, Accuracy: 0.2785977859778598
+Epoch: 540, Accuracy: 0.2841328413284133
+Epoch: 550, Accuracy: 0.28840992955384104
+Epoch: 560, Accuracy: 0.29469976517946994
+Epoch: 570, Accuracy: 0.3004025494800403
+Epoch: 580, Accuracy: 0.3054344179805435
+Epoch: 590, Accuracy: 0.30904059040590404
+Epoch: 600, Accuracy: 0.31205971150620593
+Epoch: 610, Accuracy: 0.31650452868165047
+Epoch: 620, Accuracy: 0.3209493458570949
+Epoch: 630, Accuracy: 0.32564575645756455
+Epoch: 640, Accuracy: 0.3294196578329419
+Epoch: 650, Accuracy: 0.33176786313317674
+Epoch: 660, Accuracy: 0.33604495135860446
+Epoch: 670, Accuracy: 0.33914793693391476
+Epoch: 680, Accuracy: 0.3416638711841664
+Epoch: 690, Accuracy: 0.3443475343844348
+Epoch: 700, Accuracy: 0.3465280107346528
+Epoch: 710, Accuracy: 0.3487923515598792
+Epoch: 720, Accuracy: 0.3516437437101644
+Epoch: 730, Accuracy: 0.35332103321033215
+Epoch: 740, Accuracy: 0.3550821871855082
+Epoch: 750, Accuracy: 0.35659174773565916
+Epoch: 760, Accuracy: 0.3581851727608185
+Epoch: 770, Accuracy: 0.3609527004360953
+Epoch: 780, Accuracy: 0.36447500838644753
+Epoch: 790, Accuracy: 0.3673264005367326
+Epoch: 800, Accuracy: 0.3691714189869172
+Epoch: 810, Accuracy: 0.37202281113720226
+Epoch: 820, Accuracy: 0.37386782958738674
+Epoch: 830, Accuracy: 0.37621603488762156
+Epoch: 840, Accuracy: 0.37814491781281445
+Epoch: 850, Accuracy: 0.3798222073129822
+Epoch: 860, Accuracy: 0.3815833612881583
+Epoch: 870, Accuracy: 0.3829251928882925
+Epoch: 880, Accuracy: 0.3837638376383764
+Epoch: 890, Accuracy: 0.38535726266353576
+Epoch: 900, Accuracy: 0.3869506876886951
+Epoch: 910, Accuracy: 0.3879570613887957
+Epoch: 920, Accuracy: 0.3889634350888963
+Epoch: 930, Accuracy: 0.3896343508889635
+Epoch: 940, Accuracy: 0.3901375377390137
+Epoch: 950, Accuracy: 0.3908923180140892
+Epoch: 960, Accuracy: 0.3908923180140892
+Epoch: 970, Accuracy: 0.39122777591412283
+Epoch: 980, Accuracy: 0.39156323381415636
+Epoch: 990, Accuracy: 0.392150285139215
+100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 1000/1000 [10:30:09<00:00, 37.67s/it]
+Training complete in 37809 seconds

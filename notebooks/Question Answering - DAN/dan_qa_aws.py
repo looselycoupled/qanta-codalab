@@ -5,7 +5,8 @@
 # 3. SCP this file into ~/code/
 # 4. SSH in and activate pytorch environment `source activate pytorch_p36`
 # 5. Double check imports and install missing components
-#     * ex: `conda install -c anaconda gensim`
+#     * ex: `conda install -c anaconda gensim` `conda install tqdm`
+#     * import nltk; nltk.download('punkt')
 # 6. File is ready to be executed: `python dan-qa.py`
 #     * you may want to use screen or nohup so you can exit ssh session
 
@@ -55,12 +56,12 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 # Load word embeddings
 #===========================================================================
 
-print("loading word embeddings...")
+print("INFO: loading word embeddings...")
 path = path_prefix + "data/GoogleNews-vectors-negative300.bin"
 word_vectors = KeyedVectors.load_word2vec_format(path, binary=True)
 word2ind = {k: v.index for k,v in word_vectors.vocab.items()}
 ind2word = {v:k for k,v in word2ind.items()}
-print("word embeddings loaded\n")
+print("INFO: word embeddings loaded\n")
 
 
 #===========================================================================
@@ -88,12 +89,10 @@ print("INFO: data loaded\n")
 
 
 #===========================================================================
-# Variables
+# Module Variables
 #===========================================================================
 
-save_model = "qa-dan.pt"
-grad_clipping = 5
-checkpoint = 5
+
 
 #===========================================================================
 # Classes and Functions
@@ -113,11 +112,15 @@ class DanModel(nn.Module):
 
         self.linear1 = nn.Linear(self.emb_dim, n_hidden_units)
         self.linear2 = nn.Linear(n_hidden_units, n_classes)
+        self.softmax = nn.Softmax()
+
         self.classifier = nn.Sequential(
             self.linear1,
             nn.ReLU(),
-            self.linear2)
-        self.softmax = nn.Softmax()
+            # nn.Dropout(0.25),
+            self.linear2,
+            self.softmax
+        )
 
     def forward(self, input_text, text_len):
         """
@@ -137,9 +140,8 @@ class DanModel(nn.Module):
         encoded /= text_len.view(text_embed.size(0), -1).to(device)
 
         # run data through the classifier
-        logits = self.classifier(encoded)
+        return self.classifier(encoded)
 
-        return self.softmax(logits)
 
 
 class Question_Dataset(Dataset):
@@ -200,7 +202,7 @@ def batchify(batch):
     q_batch = {'text': x1, 'len': torch.FloatTensor(question_len).to(device), 'labels': target_labels}
     return q_batch
 
-
+GRADIENT_CLIP = 0
 def train(model, train_data_loader, dev_data_loader, accuracy, device):
     """
     Train the current model
@@ -229,6 +231,8 @@ def train(model, train_data_loader, dev_data_loader, accuracy, device):
         loss = criterion(output, labels)
 
         loss.backward()
+        if GRADIENT_CLIP:
+            torch.nn.utils.clip_grad_norm(model.parameters(), GRADIENT_CLIP)
         optimizer.step()
         optimizer.zero_grad()
 
@@ -283,16 +287,22 @@ for idx, q in enumerate(data):
     if q["page"] not in ans2idx:
         ans2idx[q["page"]] = counter
         counter += 1
+idx2ans = {v: k for k, v in ans2idx.items()}
 
+torch.save({
+    "word2ind": word2ind,
+    "idx2ans": idx2ans,
+    "train_data": data,
+}, "lookups.pt")
 
 data = [(word_tokenize(q["text"]), ans2idx[q["page"]]) for q in data]
 n_classes = len(ans2idx.keys()) + 1
 
-print("creating DanModel...")
+print("INFO: creating DanModel...")
 model = DanModel(n_classes, n_hidden_units=n_hidden_units)
 model.to(device)
 print(model)
-print("Setup finished in {} seconds\n".format(int(time.time() - start)))
+print("INFO: Setup finished in {} seconds\n".format(int(time.time() - start)))
 
 # Create testing dataloader
 train_dataset = Question_Dataset(data, word2ind)
@@ -302,22 +312,33 @@ train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size,
 
 dev_size = int(len(data) / 10)
 dev_data = data[:dev_size] # random.sample(data, dev_size)
-print(f"dev_set is of length {dev_size}")
 dev_dataset = Question_Dataset(dev_data, word2ind)
 dev_sampler = torch.utils.data.sampler.SequentialSampler(dev_dataset)
 dev_loader = torch.utils.data.DataLoader(dev_dataset, batch_size=batch_size,
     sampler=dev_sampler, num_workers=0, collate_fn=batchify)
 
+print("INFO: training_size={}, dev_size={}, batch_size={}, n_classes={}, n_hidden_units={}".format(
+    len(data), dev_size, batch_size, n_classes, n_hidden_units
+))
 
 # Train / Fit
 start = time.time()
 iterable = tqdm(range(num_epochs))
+prev_high = 0
 for epoch in iterable:
     train(model, train_loader, dev_loader, accuracy, device)
-    accuracy = evaluate(dev_loader, model, device)
+    accuracy = round(evaluate(dev_loader, model, device), 2)
     accuracies.append(accuracy)
+
     if epoch % 10 == 0:
         iterable.write("Epoch: {}, Accuracy: {}".format(epoch, accuracy))
+
+    if (epoch % 50 == 0 or (epoch + 1) == num_epochs) and epoch > 0 and accuracy > prev_high:
+        save_start = time.time()
+        iterable.write("saving model at epoch {} ...".format(epoch))
+        torch.save(model, "dan-qa-aws.pt")
+        iterable.write("model saved in {} seconds".format(int(time.time() - save_start)))
+        prev_high = accuracy
 
 elapsed = int(time.time() - start)
 print("Training complete in {} seconds\n".format(elapsed))
@@ -327,17 +348,4 @@ print('\nstart testing:\n')
 accuracy = evaluate(train_loader, model, device)
 print("Final accuracy on training set: {}".format(accuracy))
 
-run_data = {
-    "epochs": num_epochs,
-    "n_hidden_units": n_hidden_units,
-    "training_size": len(data),
-    "elapsed": elapsed,
-    "accuracy": accuracy,
-    "accuracies": accuracies,
-    "batch_size": batch_size
-}
-
-torch.save(model, "dan-qa.model")
-
-with open('run.pickle', 'wb') as f:
-    pickle.dump(run_data, f)
+print(accuracies)
