@@ -20,33 +20,58 @@ TEST_FILE = "../data/qanta.test.2018.04.18.json"
 
 
 
-PARAMETERS = {
-    "lowercase": (True, False),
-    "stop_words": ("english", None),
-    "ngram_range": ((1,1), (1,2), (1,3)),
-    "max_df": [.75, .80, .85, .90, .95],        # ignore terms that have a document frequency strictly higher
-    "min_df": [.05, .1, .15, .2, 5, 10, 15, 20, 25, 50, 100, 500],               # ignore terms that have a document frequency strictly lower
-    "max_features": (5000, 10000, 15000, 20000),
-    "norm" : ("l1", "l2", None),
-    "tokenizer": (True, None),
+DEFAULT_PARAMETERS = {
+    "lowercase": True,
+    "stop_words": "english",
+    "ngram_range": (1,1),
+    "max_df": 1.0,
+    "min_df": 1,
+    "max_features": None,
+    "norm" : "l2",
+    "tokenizer": None,
 }
 
 
-def params_generator(keys, params, data):
-    key = keys.pop(0)
-    updated = []
 
-    # loop through values for my key
-    for val in params[key]:
-        for item in data:
-            ii = dict(item)
-            ii[key] = val
-            updated.append(ii)
-    if len(keys) > 0:
-        result = params_generator(keys, params, updated)
-    else:
-        return updated
-    return result
+PARAMETERS = {
+    "lowercase": (False, ),
+    "stop_words": ( None, ),
+    "ngram_range": ((1,2), (1,3)),
+    "max_df": [.75, .85, .95],                  # ignore terms that have a document frequency strictly higher
+    "min_df": [.05, .1, .2, 25, 50, 100, 500],  # ignore terms that have a document frequency strictly lower
+    "max_features": (5000, 10000, 20000),
+    "norm" : ("l1", None),
+    "tokenizer": (True, ),
+}
+
+
+def params_generator():
+    collection = [DEFAULT_PARAMETERS]
+    for k, values in PARAMETERS.items():
+        for v in values:
+            item = dict(DEFAULT_PARAMETERS)
+            item[k] = v
+            collection.append(item)
+    return collection
+
+
+
+
+# def params_generator(keys, params, data):
+#     key = keys.pop(0)
+#     updated = []
+#
+#     # loop through values for my key
+#     for val in params[key]:
+#         for item in data:
+#             ii = dict(item)
+#             ii[key] = val
+#             updated.append(ii)
+#     if len(keys) > 0:
+#         result = params_generator(keys, params, updated)
+#     else:
+#         return updated
+#     return result
 
 
 
@@ -109,7 +134,7 @@ def evaluate(options):
     train_docs, train_answers = zip(*load_data(TRAIN_FILE))
     test_docs, test_answers = zip(*load_data(TEST_FILE))
 
-    train_docs, train_answers = train_docs[:1000], train_answers
+    # train_docs, train_answers = train_docs[:1000], train_answers
 
     print("INFO: training")
     model.train(train_docs, train_answers)
@@ -126,9 +151,8 @@ def evaluate(options):
 
 if __name__ == '__main__':
     results = []
-    param_list = params_generator(list(PARAMETERS.keys()), PARAMETERS, [{}])
+    param_list = params_generator()[:1]
     print("INFO: permutations for search: {}".format(len(param_list)))
-    exit()
 
     pool = futures.ProcessPoolExecutor(max_workers=1)
     promises = [pool.submit(evaluate, i) for i in param_list]
