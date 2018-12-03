@@ -1,8 +1,12 @@
+# Project Related
 src/predictions.json
 src/scores.json
 data/*
 models/*
 *.pickle
+.vector_cache
+*.model
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
