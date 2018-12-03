@@ -279,7 +279,7 @@ def train_epoch(model, trn, gradient_clip):
     model.train()
     learning_rate = 0.0001
     epoch_acc, epoch_loss = [], []
-    optimizer = torch.optim.Adamax(model.parameters(),  lr=learning_rate)
+    optimizer = torch.optim.RMSprop(model.parameters(),  lr=learning_rate)
     criterion = nn.CrossEntropyLoss()
 
     for batch in trn:
