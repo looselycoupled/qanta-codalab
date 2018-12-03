@@ -16,6 +16,7 @@ import matplotlib
 
 from nltk import word_tokenize
 from gensim.models import KeyedVectors
+import torchtext.vocab as vocab
 
 import torch
 import torch.nn as nn
@@ -79,7 +80,11 @@ class DanModel(nn.Module):
 
         self.vocab_size, self.emb_dim = word_vectors.vectors.shape
         self.embeddings = nn.Embedding(self.vocab_size, self.emb_dim, padding_idx=0)
-        self.embeddings.weight.data.copy_(torch.from_numpy(word_vectors.vectors))
+
+        vectors = word_vectors.vectors
+        if not isinstance(vectors, torch.Tensor):
+            vectors = torch.from_numpy(word_vectors.vectors)
+        self.embeddings.weight.data.copy_(vectors)
         self.embeddings.weight.requires_grad = False
 
         self.encoder = DanEncoder(self.emb_dim, self.n_hidden_units, self.nn_dropout)
@@ -180,17 +185,22 @@ def datasets():
 
     return train_data, dev_data, test_data
 
-def embedding_data():
-    EMBEDDING_DATA_FILE = "embedding_data.pt"
-    path = Path(EMBEDDING_DATA_FILE)
-    if path.is_file():
-        return torch.load(EMBEDDING_DATA_FILE)
+def embedding_data(emb_source="google"):
+    # EMBEDDING_DATA_FILE = "embedding_data.pt"
+    # path = Path(EMBEDDING_DATA_FILE)
+    # if path.is_file():
+    #     return torch.load(EMBEDDING_DATA_FILE)
 
-    path = path_prefix + "data/GoogleNews-vectors-negative300.bin"
-    word_vectors = KeyedVectors.load_word2vec_format(path, binary=True)
-    word2ind = {k: v.index for k,v in word_vectors.vocab.items()}
-    ind2word = {v:k for k,v in word2ind.items()}
-    # torch.save((word_vectors, word2ind, ind2word), EMBEDDING_DATA_FILE)
+    if emb_source == "google":
+        path = path_prefix + "data/GoogleNews-vectors-negative300.bin"
+        word_vectors = KeyedVectors.load_word2vec_format(path, binary=True)
+        word2ind = {k: v.index for k,v in word_vectors.vocab.items()}
+        ind2word = {v:k for k,v in word2ind.items()}
+    else:
+        word_vectors = vocab.GloVe(name='42B', dim=300)
+        word2ind = word_vectors.stoi
+        ind2word = word_vectors.itos
+
     return word_vectors, word2ind, ind2word
 
 def answer_lookups(dataset):
@@ -203,35 +213,63 @@ def answer_lookups(dataset):
     idx2ans = {v: k for k, v in ans2idx.items()}
     return ans2idx, idx2ans
 
+def should_save_model(epoch, trn_accuracies, dev_accuracies):
+    SKIP = 2
+    MIN_EPOCH = 60
+    if epoch < MIN_EPOCH: return False
+    if epoch % SKIP != 0: return False
+    if max(trn_accuracies[-SKIP:]) > max(trn_accuracies[:-SKIP]): return True
+    if max(dev_accuracies[-SKIP:]) > max(dev_accuracies[:-SKIP]): return True
+    return False
+
+def should_stop_training(trn_accuracies):
+    MIN_STOP = 50
+    if len(trn_accuracies) < MIN_STOP: return False
+
+    # WINDOW = 10
+    # prev_max = max(trn_accuracies[:-WINDOW])
+    # curr_max = max(trn_accuracies[-WINDOW:])
+    # return prev_max > curr_max
+
+    WINDOW = 20
+    curr_max = max(trn_accuracies[-WINDOW:])
+    curr_min = min(trn_accuracies[-WINDOW:])
+    return curr_max - curr_min < .05
+
 
 def train(model, trn, dev, gradient_clip):
 
     start = time.time()
-    iterable = tqdm(range(num_epochs))
-    prev_high = 0
+    # iterable = tqdm(range(num_epochs))
     trn_accuracies, trn_losses, dev_accuracies = [], [], []
+    try:
+        for epoch in range(num_epochs): #iterable:
+            # train and record accuracy/loss
+            acc, loss = train_epoch(model, trn, gradient_clip)
+            trn_accuracies.append(acc)
+            trn_losses.append(loss)
 
-    for epoch in iterable:
-        # train and record accuracy/loss
-        acc, loss = train_epoch(model, trn, gradient_clip)
-        trn_accuracies.append(acc)
-        trn_losses.append(loss)
+            # find accuracy against dev set
+            dev_acc = round(evaluate(model, dev), 2)
+            dev_accuracies.append(dev_acc)
 
-        # find accuracy against dev set
-        dev_acc = round(evaluate(model, dev), 2)
-        dev_accuracies.append(dev_acc)
+            logger.info("epoch: {}, trn_acc: {}, trn_loss: {}, dev_acc: {}".format(
+                epoch, acc, loss, dev_acc))
+            # iterable.write("epoch: {}, trn_acc: {}, trn_loss: {}, dev_acc: {}".format(
+            #     epoch, acc, loss, dev_acc))
 
-        iterable.write("epoch: {}, trn_acc: {}, trn_loss: {}, dev_acc: {}".format(
-            epoch, acc, loss, dev_acc))
+            if should_save_model(epoch, trn_accuracies, dev_accuracies):
+                save_start = time.time()
+                logger.info("saving model at epoch {} ...".format(epoch))
+                torch.save(model, MODEL_FILENAME)
+                logger.info("model saved in {} seconds".format(int(time.time() - save_start)))
 
-        # check every now and then if we should save the model
-        # TODO: once stable we will change to checking every epoch
-        if (epoch % 50 == 0 or (epoch + 1) == num_epochs) and epoch > 0 and dev_acc > prev_high:
-            save_start = time.time()
-            iterable.write("saving model at epoch {} ...".format(epoch))
-            torch.save(model, MODEL_FILENAME)
-            iterable.write("model saved in {} seconds".format(int(time.time() - save_start)))
-            prev_high = dev_acc
+            if should_stop_training(trn_accuracies):
+                logger.info("exiting due to lack of progress")
+                break
+
+    except KeyboardInterrupt:
+        logger.warn("early exit requested")
 
     elapsed = int(time.time() - start)
     logger.info("Training complete in {} seconds\n".format(elapsed))
@@ -288,14 +326,6 @@ def evaluate(model, data_loader):
     accuracy = 1 - error / num_examples
     return accuracy
 
-# def save_stats(s_accuracies, s_losses, elapsed):
-#     path = "interim_stats.json"
-#     with open("stats.json", "w") as f:
-#         f.write(json.dumps({
-#             "accuracy": s_accuracies,
-#             "loss": s_losses,
-#             "elapsed": elapsed,
-#         }))
 
 def create(n_classes, word_vectors, n_hidden_units, nn_dropout):
     model = DanModel(
@@ -318,12 +348,13 @@ def load(path):
 
 
 if __name__ == '__main__':
-    num_epochs = 10
-    n_hidden_units = 1000
-    batch_size = 100
+    num_epochs = 1000
+    n_hidden_units = 100
+    batch_size = 200
     nn_dropout = 0.05       # there is discussion that combining batch norm with dropout is odd
     gradient_clip = .5      # forgot why I set this to .5 - need to test other values
-    dataset_size = 5000
+    dataset_size = 1000
+    embedding_source = "glove"
 
     with Timer() as t:
         train_data, dev_data, test_data = datasets()
@@ -334,7 +365,7 @@ if __name__ == '__main__':
             test_data = train_data            # random.sample(train_data, int(dataset_size / 2))
 
         ans2idx, idx2ans = answer_lookups(train_data)
-        word_vectors, word2ind, ind2word = embedding_data()
+        word_vectors, word2ind, ind2word = embedding_data(embedding_source)
     logger.info("Setup complete in {}".format(t))
 
     with Timer() as t:
@@ -386,4 +417,4 @@ if __name__ == '__main__':
 
     df = pd.DataFrame({"trn_acc": trn_acc, "trn_loss": trn_loss, "dev_acc": dev_acc})
     # plt.show()
-    print(df)
+    logger.info("\n" + df.to_string())
