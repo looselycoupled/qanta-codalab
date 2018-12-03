@@ -37,41 +37,51 @@ PARAMETERS = {
     "lowercase": (False, ),
     "stop_words": ( None, ),
     "ngram_range": ((1,2), (1,3)),
-    "max_df": [.75, .85, .95],                  # ignore terms that have a document frequency strictly higher
-    "min_df": [.05, .1, .2, 25, 50, 100, 500],  # ignore terms that have a document frequency strictly lower
-    "max_features": (5000, 10000, 20000),
+    "max_df": [.75, .85, .90, .95],                  # ignore terms that have a document frequency strictly higher
+    "min_df": [.05, .1, .2, 25, 50, 100, 500, 1000, 5000],  # ignore terms that have a document frequency strictly lower
+    "max_features": (5000, 10000, 20000, 50000),
     "norm" : ("l1", None),
     "tokenizer": (True, ),
 }
 
 
-def params_generator():
-    collection = [DEFAULT_PARAMETERS]
-    for k, values in PARAMETERS.items():
-        for v in values:
-            item = dict(DEFAULT_PARAMETERS)
-            item[k] = v
-            collection.append(item)
-    return collection
+# def params_generator():
+#     collection = [DEFAULT_PARAMETERS]
+#     for k, values in PARAMETERS.items():
+#         for v in values:
+#             item = dict(DEFAULT_PARAMETERS)
+#             item[k] = v
+#             collection.append(item)
+#     return collection
 
 
+PARAMETER_VALUES = {
+    "lowercase": (True, False, ),
+    "stop_words": ( "english", ),
+    "ngram_range": ((1,1), (1,2), (1,3)),
+    "max_df": [.75, .85, .90, .95, 1.0],                  # ignore terms that have a document frequency strictly higher
+    "min_df": [1, 2, 5],  # ignore terms that have a document frequency strictly lower
+    "max_features": (None, ),
+    "norm" : ("l2", ),
+    "tokenizer": (True, None),
+}
 
 
-# def params_generator(keys, params, data):
-#     key = keys.pop(0)
-#     updated = []
-#
-#     # loop through values for my key
-#     for val in params[key]:
-#         for item in data:
-#             ii = dict(item)
-#             ii[key] = val
-#             updated.append(ii)
-#     if len(keys) > 0:
-#         result = params_generator(keys, params, updated)
-#     else:
-#         return updated
-#     return result
+def params_generator(keys, params, data):
+    key = keys.pop(0)
+    updated = []
+
+    # loop through values for my key
+    for val in params[key]:
+        for item in data:
+            ii = dict(item)
+            ii[key] = val
+            updated.append(ii)
+    if len(keys) > 0:
+        result = params_generator(keys, params, updated)
+    else:
+        return updated
+    return result
 
 
 
@@ -90,7 +100,7 @@ class TFIDF():
         self.stemmer = PorterStemmer()
 
     def stemming_tokenizer(self, str_input):
-        words = re.sub(r"[^A-Za-z0-9\-]", " ", str_input).lower().split()
+        words = re.sub(r"[^A-Za-z0-9\-]", " ", str_input).split()
         words = [self.stemmer.stem(word) for word in words]
         return words
 
@@ -140,8 +150,14 @@ def evaluate(options):
     model.train(train_docs, train_answers)
 
     print("INFO: testing")
-    guesses = guesses = np.array([ans[0][0] for ans in model.guess(test_docs, 1)])
-    num_correct = (guesses == np.array(test_answers)).sum()
+
+    num_correct = 0
+    batch_size = 200
+    for idx in range(0, len(test_docs), batch_size):
+        questions = test_docs[idx: idx+batch_size]
+        answers = test_answers[idx: idx+batch_size]
+        guesses = np.array([ans[0][0] for ans in model.guess(questions, 1)])
+        num_correct += (guesses == np.array(answers)).sum()
 
     options["num_correct"] = int(num_correct)
     options["accuracy"] = num_correct / len(test_answers)
@@ -151,10 +167,10 @@ def evaluate(options):
 
 if __name__ == '__main__':
     results = []
-    param_list = params_generator()[:1]
+    param_list = params_generator(list(PARAMETER_VALUES.keys()), PARAMETER_VALUES, [{}])
     print("INFO: permutations for search: {}".format(len(param_list)))
 
-    pool = futures.ProcessPoolExecutor(max_workers=1)
+    pool = futures.ProcessPoolExecutor(max_workers=3)
     promises = [pool.submit(evaluate, i) for i in param_list]
 
     for f in futures.as_completed(promises):
