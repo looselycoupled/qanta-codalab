@@ -6,6 +6,9 @@ models/*
 *.pickle
 .vector_cache
 *.model
+*/wiki-dataset-wrangle/data/*
+notebooks/data/*
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

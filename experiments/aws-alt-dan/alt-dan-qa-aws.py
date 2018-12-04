@@ -29,6 +29,10 @@ DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 MODEL_FILENAME = "alt-dan-qa-aws.pt"
 LOGFILE = "output.log"
 
+##########################################################################
+# Logging
+##########################################################################
+
 # remove existing log file
 try:
     os.remove(LOGFILE)
@@ -45,11 +49,10 @@ logging.basicConfig(
     ])
 logger = logging.getLogger()
 
-# def create_save_model(model):
-#     def save_model(path):
-#         torch.save(model.state_dict(), path)
-#     return save_model
 
+##########################################################################
+# Classes
+##########################################################################
 
 class DanEncoder(nn.Module):
     def __init__(self, embedding_dim, n_hidden_units, dropout_prob):
@@ -131,6 +134,9 @@ class Question_Dataset(Dataset):
     def __len__(self):
         return len(self.examples)
 
+##########################################################################
+# Helpers
+##########################################################################
 
 def vectorize(ex, lookup):
     question_text, question_label = ex
@@ -186,11 +192,6 @@ def datasets():
     return train_data, dev_data, test_data
 
 def embedding_data(emb_source="google"):
-    # EMBEDDING_DATA_FILE = "embedding_data.pt"
-    # path = Path(EMBEDDING_DATA_FILE)
-    # if path.is_file():
-    #     return torch.load(EMBEDDING_DATA_FILE)
-
     if emb_source == "google":
         path = path_prefix + "data/GoogleNews-vectors-negative300.bin"
         word_vectors = KeyedVectors.load_word2vec_format(path, binary=True)
@@ -215,7 +216,7 @@ def answer_lookups(dataset):
 
 def should_save_model(epoch, trn_accuracies, dev_accuracies):
     SKIP = 2
-    MIN_EPOCH = 60
+    MIN_EPOCH = 35
     if epoch < MIN_EPOCH: return False
     if epoch % SKIP != 0: return False
     if max(trn_accuracies[-SKIP:]) > max(trn_accuracies[:-SKIP]): return True
@@ -226,21 +227,19 @@ def should_stop_training(trn_accuracies):
     MIN_STOP = 50
     if len(trn_accuracies) < MIN_STOP: return False
 
-    # WINDOW = 10
-    # prev_max = max(trn_accuracies[:-WINDOW])
-    # curr_max = max(trn_accuracies[-WINDOW:])
-    # return prev_max > curr_max
-
     WINDOW = 20
     curr_max = max(trn_accuracies[-WINDOW:])
     curr_min = min(trn_accuracies[-WINDOW:])
     return curr_max - curr_min < .05
 
 
+##########################################################################
+# Primary Train/Evaluate Functions
+##########################################################################
+
 def train(model, trn, dev, gradient_clip):
 
     start = time.time()
-    # iterable = tqdm(range(num_epochs))
     trn_accuracies, trn_losses, dev_accuracies = [], [], []
     try:
         for epoch in range(num_epochs): #iterable:
@@ -255,8 +254,6 @@ def train(model, trn, dev, gradient_clip):
 
             logger.info("epoch: {}, trn_acc: {}, trn_loss: {}, dev_acc: {}".format(
                 epoch, acc, loss, dev_acc))
-            # iterable.write("epoch: {}, trn_acc: {}, trn_loss: {}, dev_acc: {}".format(
-            #     epoch, acc, loss, dev_acc))
 
             if should_save_model(epoch, trn_accuracies, dev_accuracies):
                 save_start = time.time()
@@ -306,7 +303,6 @@ def train_epoch(model, trn, gradient_clip):
     return np.mean(epoch_acc), np.mean(epoch_loss)
 
 
-
 def evaluate(model, data_loader):
     model.eval()
     num_examples = 0
@@ -327,6 +323,10 @@ def evaluate(model, data_loader):
     return accuracy
 
 
+##########################################################################
+# Helper Functions (model management)
+##########################################################################
+
 def create(n_classes, word_vectors, n_hidden_units, nn_dropout):
     model = DanModel(
         n_classes=n_classes,
@@ -346,14 +346,17 @@ def load(path):
     pass
 
 
+##########################################################################
+# Execution
+##########################################################################
 
 if __name__ == '__main__':
     num_epochs = 1000
-    n_hidden_units = 100
+    n_hidden_units = 1000
     batch_size = 200
     nn_dropout = 0.05       # there is discussion that combining batch norm with dropout is odd
     gradient_clip = .5      # forgot why I set this to .5 - need to test other values
-    dataset_size = 1000
+    dataset_size = 2000
     embedding_source = "glove"
 
     with Timer() as t:
