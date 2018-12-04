@@ -27,6 +27,7 @@ from torch.nn.utils import clip_grad_norm_
 path_prefix = "../../"
 DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 MODEL_FILENAME = "dan.pt"
+LOOKUP_FILENAME = "lookups.pt"
 LOGFILE = "run-output.log"
 
 ##########################################################################
@@ -145,8 +146,8 @@ def vectorize(ex, lookup):
 
 
 def batchify(batch):
-    question_len = list()
-    label_list = list()
+    question_len = list()           # list containing size of each question
+    label_list = list()             # list containing index of correct answer
 
     for ex in batch:
         question_len.append(len(ex[0]))
@@ -346,6 +347,27 @@ def load(path):
     pass
 
 
+class DanGuesser():
+
+    def __init__(self):
+        self.model = torch.load(MODEL_FILENAME)
+
+        lookups = torch.load(LOOKUP_FILENAME)
+        self.word2ind = lookups["word2ind"]
+        self.ind2word = lookups["ind2word"]
+        self.idx2ans = lookups["idx2ans"]
+        self.ans2idx = lookups["ans2idx"]
+
+    def guess(self, question, num_guesses=5):
+        tokenized_text = word_tokenize(question)
+        vec = vectorize((tokenized_text, "IGNORE_ME"), self.word2ind)[0]
+
+        logits = self.model(torch.LongTensor([vec]),torch.FloatTensor([len(vec)]))
+
+        ans_logits, ans_idx = logits.topk(num_guesses)
+        ans = self.idx2ans[ans_idx[0][0].item()]
+        return ans
+
 ##########################################################################
 # Execution
 ##########################################################################
@@ -372,9 +394,11 @@ if __name__ == '__main__':
 
         torch.save({
             "word2ind": word2ind,
+            "ind2word": ind2word,
             "idx2ans": idx2ans,
+            "ans2idx": ans2idx,
             "train_data": train_data,
-        }, "lookups.pt")
+        }, LOOKUP_FILENAME)
 
     logger.info("Setup complete in {}".format(t))
 
@@ -426,5 +450,4 @@ if __name__ == '__main__':
     }))
 
     df = pd.DataFrame({"trn_acc": trn_acc, "trn_loss": trn_loss, "dev_acc": dev_acc})
-    # plt.show()
     logger.info("\n" + df.to_string())
