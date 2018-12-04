@@ -19,11 +19,11 @@ if __name__ == '__main__':
     idx2ans = stuff["idx2ans"]
     data = stuff["train_data"]
 
-    model = torch.load("alt-dan-qa-aws.pt")
+    model = torch.load("dan.pt")
     print(model)
 
     results = []
-    for i in range(10):
+    for i in range(50):
         question = random.choice(data)
 
         ii = [word2ind[w] for w in question["text"].split() if w in word2ind]

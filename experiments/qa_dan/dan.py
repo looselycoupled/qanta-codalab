@@ -26,8 +26,8 @@ from torch.nn.utils import clip_grad_norm_
 
 path_prefix = "../../"
 DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-MODEL_FILENAME = "alt-dan-qa-aws.pt"
-LOGFILE = "output.log"
+MODEL_FILENAME = "dan.pt"
+LOGFILE = "run-output.log"
 
 ##########################################################################
 # Logging
@@ -387,7 +387,7 @@ if __name__ == '__main__':
             "word_vectors": word_vectors,
         }
         model = create(**options)
-        with open("details.json", "w") as f:
+        with open("run-details.json", "w") as f:
             details = {
                 "num_epochs": num_epochs,
                 "train_data": len(train_data),
@@ -408,7 +408,7 @@ if __name__ == '__main__':
     tst = create_loader(test_data, batch_size, ans2idx, word2ind)
 
     trn_acc, trn_loss, dev_acc = train(model, trn, dev, gradient_clip)
-    with open("stats.json", "w") as f:
+    with open("run-stats.json", "w") as f:
         f.write(json.dumps({
             "trn_accuracies": [ii.item() for ii in trn_acc],
             "trn_losses": [ii.item() for ii in trn_loss],
