@@ -1,0 +1,6 @@
+
+Default TF/IDF
+{"first_acc": 0.0, "end_acc": 0.5234657039711191, "expected_wins": 0.003260932758101146, "expected_wins_optimal": 0.6224577465175445}
+
+Stemming TF/IDF
+{"first_acc": 0.0, "end_acc": 0.5324909747292419, "expected_wins": 0.002360358172601519, "expected_wins_optimal": 0.6309697341646513}
