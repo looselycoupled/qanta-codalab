@@ -357,7 +357,7 @@ if __name__ == '__main__':
     nn_dropout = 0.05       # there is discussion that combining batch norm with dropout is odd
     gradient_clip = .5      # forgot why I set this to .5 - need to test other values
     dataset_size = 2000
-    embedding_source = "glove"
+    embedding_source = "google"
 
     with Timer() as t:
         train_data, dev_data, test_data = datasets()
@@ -369,6 +369,13 @@ if __name__ == '__main__':
 
         ans2idx, idx2ans = answer_lookups(train_data)
         word_vectors, word2ind, ind2word = embedding_data(embedding_source)
+
+        torch.save({
+            "word2ind": word2ind,
+            "idx2ans": idx2ans,
+            "train_data": train_data,
+        }, "lookups.pt")
+
     logger.info("Setup complete in {}".format(t))
 
     with Timer() as t:
