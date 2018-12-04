@@ -397,7 +397,7 @@ if __name__ == '__main__':
             "ind2word": ind2word,
             "idx2ans": idx2ans,
             "ans2idx": ans2idx,
-            "train_data": train_data,
+            # "train_data": train_data,
         }, LOOKUP_FILENAME)
 
     logger.info("Setup complete in {}".format(t))
