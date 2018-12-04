@@ -1,60 +1,57 @@
-from typing import List, Optional, Tuple
-from collections import defaultdict
-import pickle
-import json
-from os import path
-
-import re
-from nltk.stem.porter import PorterStemmer
 
 import click
 from tqdm import tqdm
-from sklearn.feature_extraction.text import TfidfVectorizer
 from flask import Flask, jsonify, request
 
-from qanta import util
-from qanta.dataset import QuizBowlDataset
+from qanta.tfidf import TfidfGuesser
+from qanta.models.dan import DanGuesser, DanModel, DanEncoder
 
-from tfidf import TfidfGuesser
-
-
-MODEL_PATH = 'tfidf.pickle'
 BUZZ_NUM_GUESSES = 10
 BUZZ_THRESHOLD = 0.3
 
 
-def guess_and_buzz(tfidf_model, dan_model, lstm_model, question_text) -> Tuple[str, bool]:
+def guess_and_buzz(tfidf_model, dan_model, question_text):
     tfidf_guesses = tfidf_model.guess([question_text], BUZZ_NUM_GUESSES)[0]
-    dan_guesses = dan_model.guess([question_text], BUZZ_NUM_GUESSES)[0]
-    lstm_guesses = lstm_model.guess([question_text], BUZZ_NUM_GUESSES)[0]
+    dan_guesses = dan_model.guess(question_text, BUZZ_NUM_GUESSES)
 
+    question_len = len(question_text.split(" "))
+    print(question_len)
 
-    scores = [guess[1] for guess in guesses]
-    buzz = scores[0] / sum(scores) >= BUZZ_THRESHOLD
-    return guesses[0][0], buzz
-
-
-def batch_guess_and_buzz(model, questions) -> List[Tuple[str, bool]]:
-    question_guesses = model.guess(questions, BUZZ_NUM_GUESSES)
-    outputs = []
-    for guesses in question_guesses:
-        scores = [guess[1] for guess in guesses]
+    if question_len < 50:
+        print("INFO: replying with TFIDF")
+        scores = [guess[1] for guess in tfidf_guesses]
         buzz = scores[0] / sum(scores) >= BUZZ_THRESHOLD
-        outputs.append((guesses[0][0], buzz))
-    return outputs
+        return tfidf_guesses[0][0], buzz
+
+    print("INFO: replying with DAN")
+    return dan_guesses, True
+
+
+
+
+
+
+# def batch_guess_and_buzz(model, questions):
+#     question_guesses = model.guess(questions, BUZZ_NUM_GUESSES)
+#     outputs = []
+#     for guesses in question_guesses:
+#         scores = [guess[1] for guess in guesses]
+#         buzz = scores[0] / sum(scores) >= BUZZ_THRESHOLD
+#         outputs.append((guesses[0][0], buzz))
+#     return outputs
 
 
 
 
 def create_app(enable_batch=True, stem=True):
     tfidf_guesser = TfidfGuesser.load(stem=stem)
-    dan_guesser = DANGuesser.load(stem=stem)
+    dan_guesser = DanGuesser()
     app = Flask(__name__)
 
     @app.route('/api/1.0/quizbowl/act', methods=['POST'])
     def act():
         question = request.json['text']
-        guess, buzz = guess_and_buzz(tfidf_guesser, question)
+        guess, buzz = guess_and_buzz(tfidf_guesser, dan_guesser, question)
         return jsonify({'guess': guess, 'buzz': True if buzz else False})
 
     @app.route('/api/1.0/quizbowl/status', methods=['GET'])
@@ -77,6 +74,9 @@ def create_app(enable_batch=True, stem=True):
     return app
 
 
+@click.group()
+def cli():
+    pass
 
 
 @cli.command()

@@ -17,7 +17,7 @@ services:
     command: [
       "python", "/eval/evaluate.py",
       "--curve-pkl", "/eval/curve_pipeline.pkl",
-      "--wait", "5",
+      "--wait", "60",
       "--hostname", "qb",
       "--norun-web",
       "--char_step_size", "600",

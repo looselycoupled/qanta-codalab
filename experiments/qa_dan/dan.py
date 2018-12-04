@@ -4,15 +4,12 @@ import json
 import time
 import random
 from pathlib import Path
-from timer import Timer
+from .timer import Timer
 import logging
 from pprint import pformat
 
 import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
-from tqdm import trange, tqdm_notebook, tqdm
-import matplotlib
+# import pandas as pd
 
 from nltk import word_tokenize
 from gensim.models import KeyedVectors
@@ -350,9 +347,11 @@ def load(path):
 class DanGuesser():
 
     def __init__(self):
-        self.model = torch.load(MODEL_FILENAME)
+        path = "fixtures/dan/" + MODEL_FILENAME
+        self.model = torch.load(path, map_location='cpu')
 
-        lookups = torch.load(LOOKUP_FILENAME)
+        path = "fixtures/dan/" + LOOKUP_FILENAME
+        lookups = torch.load(path)
         self.word2ind = lookups["word2ind"]
         self.ind2word = lookups["ind2word"]
         self.idx2ans = lookups["idx2ans"]
@@ -449,5 +448,5 @@ if __name__ == '__main__':
         "n_classes": n_classes, "lr": 0.0001
     }))
 
-    df = pd.DataFrame({"trn_acc": trn_acc, "trn_loss": trn_loss, "dev_acc": dev_acc})
-    logger.info("\n" + df.to_string())
+    # df = pd.DataFrame({"trn_acc": trn_acc, "trn_loss": trn_loss, "dev_acc": dev_acc})
+    # logger.info("\n" + df.to_string())

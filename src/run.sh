@@ -1,3 +1,5 @@
 #!/usr/bin/env bash
 
-python -m qanta.tfidf web
+pip install torchtext gensim
+
+python -m qanta.server web
