@@ -28,6 +28,11 @@ def guess_and_buzz(tfidf_model, dan_model, question_text):
 
 
 
+def batch_guess_and_buzz(tfidf_model, dan_model, questions):
+    results = []
+    for question_text in questions:
+        results.append(guess_and_buzz(tfidf_model, dan_model, question_text))
+    return results
 
 
 
@@ -67,7 +72,7 @@ def create_app(enable_batch=True, stem=True):
         questions = [q['text'] for q in request.json['questions']]
         return jsonify([
             {'guess': guess, 'buzz': True if buzz else False}
-            for guess, buzz in batch_guess_and_buzz(tfidf_guesser, questions)
+            for guess, buzz in batch_guess_and_buzz(tfidf_guesser, dan_guesser, questions)
         ])
 
 
