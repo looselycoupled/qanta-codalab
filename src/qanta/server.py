@@ -15,15 +15,14 @@ def guess_and_buzz(tfidf_model, dan_model, question_text):
     dan_guesses = dan_model.guess(question_text, BUZZ_NUM_GUESSES)
 
     question_len = len(question_text.split(" "))
-    print(question_len)
 
     if question_len < 50:
-        print("INFO: replying with TFIDF")
+        # print("INFO: replying with TFIDF")
         scores = [guess[1] for guess in tfidf_guesses]
         buzz = scores[0] / sum(scores) >= BUZZ_THRESHOLD
         return tfidf_guesses[0][0], buzz
 
-    print("INFO: replying with DAN")
+    # print("INFO: replying with DAN")
     return dan_guesses, True
 
 
