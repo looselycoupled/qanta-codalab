@@ -1,0 +1,159 @@
+(pytorch_p36) ubuntu@ip-172-30-4-246:~/code$ python dan-qa-aws.py
+INFO: loading word embeddings...
+INFO: word embeddings loaded
+
+INFO: loading data
+INFO: data loaded
+
+INFO: creating DanModel...
+DanModel(
+  (embeddings): Embedding(3000000, 300, padding_idx=0)
+  (linear1): Linear(in_features=300, out_features=7000, bias=True)
+  (linear2): Linear(in_features=7000, out_features=26878, bias=True)
+  (softmax): Softmax()
+  (classifier): Sequential(
+    (0): Linear(in_features=300, out_features=7000, bias=True)
+    (1): ReLU()
+    (2): Linear(in_features=7000, out_features=26878, bias=True)
+    (3): Softmax()
+  )
+)
+INFO: Setup finished in 197 seconds
+
+INFO: training_size=119247, dev_size=11924, batch_size=500, n_classes=26878, n_hidden_units=7000
+Epoch: 0, Accuracy: 0.0
+Epoch: 10, Accuracy: 0.01
+Epoch: 20, Accuracy: 0.02
+Epoch: 30, Accuracy: 0.03
+Epoch: 40, Accuracy: 0.04
+Epoch: 50, Accuracy: 0.05
+saving model at epoch 50 ...
+model saved in 50 seconds
+Epoch: 60, Accuracy: 0.06
+Epoch: 70, Accuracy: 0.08
+Epoch: 80, Accuracy: 0.09
+Epoch: 90, Accuracy: 0.1
+Epoch: 100, Accuracy: 0.11
+saving model at epoch 100 ...
+model saved in 50 seconds
+Epoch: 110, Accuracy: 0.11
+Epoch: 120, Accuracy: 0.12
+Epoch: 130, Accuracy: 0.12
+Epoch: 140, Accuracy: 0.13
+Epoch: 150, Accuracy: 0.14
+saving model at epoch 150 ...
+model saved in 50 seconds
+Epoch: 160, Accuracy: 0.14
+Epoch: 170, Accuracy: 0.15
+Epoch: 180, Accuracy: 0.16
+Epoch: 190, Accuracy: 0.16
+Epoch: 200, Accuracy: 0.17
+saving model at epoch 200 ...
+model saved in 50 seconds
+Epoch: 210, Accuracy: 0.18
+Epoch: 220, Accuracy: 0.19
+Epoch: 230, Accuracy: 0.19
+Epoch: 240, Accuracy: 0.2
+Epoch: 250, Accuracy: 0.2
+saving model at epoch 250 ...
+model saved in 50 seconds
+Epoch: 260, Accuracy: 0.21
+Epoch: 270, Accuracy: 0.22
+Epoch: 280, Accuracy: 0.23
+Epoch: 290, Accuracy: 0.24
+Epoch: 300, Accuracy: 0.24
+saving model at epoch 300 ...
+model saved in 50 seconds
+Epoch: 310, Accuracy: 0.25
+Epoch: 320, Accuracy: 0.26
+Epoch: 330, Accuracy: 0.26
+Epoch: 340, Accuracy: 0.27
+Epoch: 350, Accuracy: 0.28
+saving model at epoch 350 ...
+model saved in 50 seconds
+Epoch: 360, Accuracy: 0.28
+Epoch: 370, Accuracy: 0.29
+Epoch: 380, Accuracy: 0.3
+Epoch: 390, Accuracy: 0.31
+Epoch: 400, Accuracy: 0.32
+saving model at epoch 400 ...
+model saved in 50 seconds
+Epoch: 410, Accuracy: 0.33
+Epoch: 420, Accuracy: 0.33
+Epoch: 430, Accuracy: 0.34
+Epoch: 440, Accuracy: 0.35
+Epoch: 450, Accuracy: 0.36
+saving model at epoch 450 ...
+model saved in 50 seconds
+Epoch: 460, Accuracy: 0.37
+Epoch: 470, Accuracy: 0.38
+Epoch: 480, Accuracy: 0.38
+Epoch: 490, Accuracy: 0.39
+Epoch: 500, Accuracy: 0.39
+saving model at epoch 500 ...
+model saved in 50 seconds
+Epoch: 510, Accuracy: 0.4
+Epoch: 520, Accuracy: 0.4
+Epoch: 530, Accuracy: 0.41
+Epoch: 540, Accuracy: 0.41
+Epoch: 550, Accuracy: 0.42
+saving model at epoch 550 ...
+model saved in 50 seconds
+Epoch: 560, Accuracy: 0.42
+Epoch: 570, Accuracy: 0.43
+Epoch: 580, Accuracy: 0.44
+Epoch: 590, Accuracy: 0.44
+Epoch: 600, Accuracy: 0.44
+saving model at epoch 600 ...
+model saved in 50 seconds
+Epoch: 610, Accuracy: 0.45
+Epoch: 620, Accuracy: 0.45
+Epoch: 630, Accuracy: 0.46
+Epoch: 640, Accuracy: 0.46
+Epoch: 650, Accuracy: 0.46
+saving model at epoch 650 ...
+model saved in 50 seconds
+Epoch: 660, Accuracy: 0.47
+Epoch: 670, Accuracy: 0.47
+Epoch: 680, Accuracy: 0.47
+Epoch: 690, Accuracy: 0.47
+Epoch: 700, Accuracy: 0.48
+saving model at epoch 700 ...
+model saved in 50 seconds
+Epoch: 710, Accuracy: 0.48
+Epoch: 720, Accuracy: 0.48
+Epoch: 730, Accuracy: 0.48
+Epoch: 740, Accuracy: 0.49
+Epoch: 750, Accuracy: 0.49
+saving model at epoch 750 ...
+model saved in 50 seconds
+Epoch: 760, Accuracy: 0.49
+Epoch: 770, Accuracy: 0.49
+Epoch: 780, Accuracy: 0.49
+Epoch: 790, Accuracy: 0.49
+Epoch: 800, Accuracy: 0.49
+ 80%|███████████████████████████████████████████████████████████████████████████████████████████▋                      | 804/1000 [23:46:57<5:42:14, 104.77s/it]Epoch: 810, Accuracy: 0.5
+Epoch: 820, Accuracy: 0.5
+Epoch: 830, Accuracy: 0.5
+Epoch: 840, Accuracy: 0.5
+Epoch: 850, Accuracy: 0.5
+saving model at epoch 850 ...
+model saved in 50 seconds
+Epoch: 860, Accuracy: 0.5
+Epoch: 870, Accuracy: 0.5
+Epoch: 880, Accuracy: 0.5
+Epoch: 890, Accuracy: 0.5
+Epoch: 900, Accuracy: 0.5
+Epoch: 910, Accuracy: 0.51
+Epoch: 920, Accuracy: 0.51
+Epoch: 930, Accuracy: 0.51
+Epoch: 940, Accuracy: 0.51
+Epoch: 950, Accuracy: 0.51
+saving model at epoch 950 ...
+model saved in 50 seconds
+Epoch: 960, Accuracy: 0.51
+Epoch: 970, Accuracy: 0.51
+Epoch: 980, Accuracy: 0.51
+Epoch: 990, Accuracy: 0.51
+100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 1000/1000 [29:31:28<00:00, 104.63s/it]
+Training complete in 106288 seconds

@@ -1,3 +1,7 @@
 #!/usr/bin/env bash
 
-python -m qanta.tfidf web
+pip install torchtext gensim
+
+python -c "import nltk; nltk.download('punkt')"
+
+python -m qanta.server web

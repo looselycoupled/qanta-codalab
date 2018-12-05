@@ -1,0 +1,25 @@
+Reserve spot instance
+  Image: Deep Learning AMI (Ubuntu) Version 19.0 (ami-00fc7481b84be120b)
+  Instance: p2.xlarge
+  EBS: 200GB
+
+Install Libraries
+
+    pip install gensim tqdm
+
+Download nltk components
+
+    import nltk
+    nltk.download('punkt')
+
+
+Download torchtext for embeddings
+
+    import torch
+    import torch.nn as nn
+    import torchtext.vocab as vocab
+    glove = vocab.GloVe(name='6B', dim=200)
+
+Download misc dependencies
+
+    import

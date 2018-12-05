@@ -4,6 +4,9 @@ import pickle
 import json
 from os import path
 
+import re
+from nltk.stem.porter import PorterStemmer
+
 import click
 from tqdm import tqdm
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -36,10 +39,16 @@ def batch_guess_and_buzz(model, questions) -> List[Tuple[str, bool]]:
 
 
 class TfidfGuesser:
-    def __init__(self):
+    def __init__(self, stem=False):
         self.tfidf_vectorizer = None
         self.tfidf_matrix = None
         self.i_to_ans = None
+        self.stemmer = PorterStemmer() if stem else None
+
+    def stemming_tokenizer(self, str_input):
+        words = re.sub(r"[^A-Za-z0-9\-]", " ", str_input).lower().split()
+        words = [self.stemmer.stem(word) for word in words]
+        return words
 
     def train(self, training_data) -> None:
         questions = training_data[0]
@@ -56,9 +65,17 @@ class TfidfGuesser:
             y_array.append(ans)
 
         self.i_to_ans = {i: ans for i, ans in enumerate(y_array)}
-        self.tfidf_vectorizer = TfidfVectorizer(
-            ngram_range=(1, 3), min_df=2, max_df=.9
-        ).fit(x_array)
+
+        vectorizer_kwargs = {
+            'ngram_range': (1, 3),
+            'min_df': 2,
+            'max_df': .9
+        }
+        if self.stemmer:
+            print("using stemmer in vectorizer")
+            vectorizer_kwargs["tokenizer"] = self.stemming_tokenizer
+
+        self.tfidf_vectorizer = TfidfVectorizer(**vectorizer_kwargs).fit(x_array)
         self.tfidf_matrix = self.tfidf_vectorizer.transform(x_array)
 
     def guess(self, questions: List[str], max_n_guesses: Optional[int]) -> List[List[Tuple[str, float]]]:
@@ -73,16 +90,25 @@ class TfidfGuesser:
         return guesses
 
     def save(self):
-        with open(MODEL_PATH, 'wb') as f:
+        path = self.__class__._get_model_path(stem=self.stemmer)
+        with open(path, 'wb') as f:
             pickle.dump({
                 'i_to_ans': self.i_to_ans,
                 'tfidf_vectorizer': self.tfidf_vectorizer,
                 'tfidf_matrix': self.tfidf_matrix
             }, f)
 
+    @staticmethod
+    def _get_model_path(stem=False):
+        if stem:
+            return f"stem-{MODEL_PATH}"
+        return MODEL_PATH
+
     @classmethod
-    def load(cls):
-        with open(MODEL_PATH, 'rb') as f:
+    def load(cls, stem=False):
+        path = cls._get_model_path(stem)
+        # print(f"Loading {path} guesser")
+        with open(path, 'rb') as f:
             params = pickle.load(f)
             guesser = TfidfGuesser()
             guesser.tfidf_vectorizer = params['tfidf_vectorizer']
@@ -91,8 +117,8 @@ class TfidfGuesser:
             return guesser
 
 
-def create_app(enable_batch=True):
-    tfidf_guesser = TfidfGuesser.load()
+def create_app(enable_batch=True, stem=True):
+    tfidf_guesser = TfidfGuesser.load(stem=stem)
     app = Flask(__name__)
 
     @app.route('/api/1.0/quizbowl/act', methods=['POST'])
@@ -139,12 +165,13 @@ def web(host, port, disable_batch):
 
 
 @cli.command()
-def train():
+@click.option('--stem', default=False, is_flag=True)
+def train(stem):
     """
     Train the tfidf model, requires downloaded data and saves to models/
     """
     dataset = QuizBowlDataset(guesser_train=True)
-    tfidf_guesser = TfidfGuesser()
+    tfidf_guesser = TfidfGuesser(stem=stem)
     tfidf_guesser.train(dataset.training_data())
     tfidf_guesser.save()
 

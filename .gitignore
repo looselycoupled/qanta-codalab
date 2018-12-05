@@ -1,12 +1,21 @@
+# Project Related
 src/predictions.json
 src/scores.json
 data/*
 models/*
 *.pickle
+.vector_cache
+*.model
+*/wiki-dataset-wrangle/data/*
+notebooks/data/*
+
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
+.DS_Store
+*.pt
 
 # C extensions
 *.so
@@ -114,4 +123,3 @@ venv.bak/
 .mypy_cache/
 .dmypy.json
 dmypy.json
-
