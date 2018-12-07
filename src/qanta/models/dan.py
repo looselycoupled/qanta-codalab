@@ -11,9 +11,10 @@ from pprint import pformat
 import numpy as np
 # import pandas as pd
 
+import nltk
+nltk.data.path += ["fixtures/nltk_data"]
+
 from nltk import word_tokenize
-from gensim.models import KeyedVectors
-import torchtext.vocab as vocab
 
 import torch
 import torch.nn as nn
@@ -191,11 +192,13 @@ def datasets():
 
 def embedding_data(emb_source="google"):
     if emb_source == "google":
+        from gensim.models import KeyedVectors
         path = path_prefix + "data/GoogleNews-vectors-negative300.bin"
         word_vectors = KeyedVectors.load_word2vec_format(path, binary=True)
         word2ind = {k: v.index for k,v in word_vectors.vocab.items()}
         ind2word = {v:k for k,v in word2ind.items()}
     else:
+        import torchtext.vocab as vocab
         word_vectors = vocab.GloVe(name='42B', dim=300)
         word2ind = word_vectors.stoi
         ind2word = word_vectors.itos
