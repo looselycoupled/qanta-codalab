@@ -7,3 +7,10 @@ Stemming TF/IDF
 
 TF/IDF and DAN v1.0
 {"first_acc": 0.0, "end_acc": 0.6877256317689531, "expected_wins": 0.3443603274825894, "expected_wins_optimal": 0.7821398508298285}
+
+
+TF/IDF and DAN v1.0 (DAN and TFIDF both get to buzz if confident)
+{"first_acc": 0.0, "end_acc": 0.6881768953068592, "expected_wins": 0.22086062814788582, "expected_wins_optimal": 0.7822218516012173}
+
+TF/IDF and DAN v1.0 (DAN and TFIDF both get to buzz if confident but TFIDF only if under 50 words)
+{"first_acc": 0.0, "end_acc": 0.6877256317689531, "expected_wins": 0.2201636512123848, "expected_wins_optimal": 0.7821398508298285}
