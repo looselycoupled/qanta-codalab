@@ -14,3 +14,8 @@ TF/IDF and DAN v1.0 (DAN and TFIDF both get to buzz if confident)
 
 TF/IDF and DAN v1.0 (DAN and TFIDF both get to buzz if confident but TFIDF only if under 50 words)
 {"first_acc": 0.0, "end_acc": 0.6877256317689531, "expected_wins": 0.2201636512123848, "expected_wins_optimal": 0.7821398508298285}
+
+
+
+Default TF/IDF first 50, then DAN buzzes 
+{"first_acc": 0.0, "end_acc": 0.42193140794223827, "expected_wins": 0.15221777278922483, "expected_wins_optimal": 0.5845992400723761}

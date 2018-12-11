@@ -4,7 +4,7 @@ import json
 import time
 import random
 from pathlib import Path
-from timer import Timer
+from .timer import Timer
 import logging
 from pprint import pformat
 
