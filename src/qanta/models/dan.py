@@ -4,7 +4,7 @@ import json
 import time
 import random
 from pathlib import Path
-from .timer import Timer
+from timer import Timer
 import logging
 from pprint import pformat
 
@@ -351,7 +351,7 @@ class DanGuesser():
 
     def __init__(self):
         path = "fixtures/dan/" + MODEL_FILENAME
-        self.model = torch.load(path, map_location='cpu')
+        self.model = torch.load(path, map_location=DEVICE)
 
         path = "fixtures/dan/" + LOOKUP_FILENAME
         lookups = torch.load(path)
@@ -376,22 +376,17 @@ class DanGuesser():
 
 if __name__ == '__main__':
     num_epochs = 1000
-    n_hidden_units = 1000
-    batch_size = 200
+    n_hidden_units = 14000
+    batch_size = 500
     nn_dropout = 0.05       # there is discussion that combining batch norm with dropout is odd
     gradient_clip = .5      # forgot why I set this to .5 - need to test other values
-    dataset_size = 2000
+    dataset_size = None
     embedding_source = "google"
 
     with Timer() as t:
         train_data, dev_data, test_data = datasets()
-        train_data = train_data + dev_data + test_data
-        if dataset_size:
-            train_data = train_data[:dataset_size]
-            dev_data = random.sample(train_data, int(dataset_size / 2))
-            test_data = train_data            # random.sample(train_data, int(dataset_size / 2))
 
-        ans2idx, idx2ans = answer_lookups(train_data)
+        ans2idx, idx2ans = answer_lookups(train_data + test_data + dev_data)
         word_vectors, word2ind, ind2word = embedding_data(embedding_source)
 
         torch.save({
@@ -433,6 +428,7 @@ if __name__ == '__main__':
     dev = create_loader(dev_data, batch_size, ans2idx, word2ind)
     tst = create_loader(test_data, batch_size, ans2idx, word2ind)
 
+    logger.info("INFO: starting training")
     trn_acc, trn_loss, dev_acc = train(model, trn, dev, gradient_clip)
     with open("run-stats.json", "w") as f:
         f.write(json.dumps({
@@ -441,13 +437,19 @@ if __name__ == '__main__':
             "dev_accuracies": dev_acc,
         }))
 
-    final_accuracy = evaluate(model, trn)
-    logger.info("final accuracy on full training set: {}".format(final_accuracy))
+    final_trn_accuracy = evaluate(model, trn)
+    final_tst_accuracy = evaluate(model, tst)
+
+    logger.info("final accuracy on full training set: {}".format(final_trn_accuracy))
+    logger.info("final accuracy on test set: {}".format(final_tst_accuracy))
+    logger.info("final accuracy on dev set: {}".format(dev_acc[-1]))
     logger.info("max accuracy on dev set: {}".format(max(dev_acc)))
+
     logger.info(pformat({
         "num_epochs": num_epochs, "n_hidden_units": n_hidden_units, "batch_size": batch_size,
         "max_dev_acc": max(dev_acc), "train_size": len(train_data), "dev_size": len(dev_data),
-        "final_acc": final_accuracy, "dropout": nn_dropout, "gradient_clip": gradient_clip,
+        "final_acc_train": final_trn_accuracy, "final_acc_test": final_tst_accuracy,
+        "dropout": nn_dropout, "gradient_clip": gradient_clip,
         "n_classes": n_classes, "lr": 0.0001
     }))
 
