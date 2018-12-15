@@ -7,3 +7,31 @@ Stemming TF/IDF
 
 TF/IDF and DAN v1.0
 {"first_acc": 0.0, "end_acc": 0.6877256317689531, "expected_wins": 0.3443603274825894, "expected_wins_optimal": 0.7821398508298285}
+
+
+TF/IDF and DAN v1.0 (DAN and TFIDF both get to buzz if confident)
+{"first_acc": 0.0, "end_acc": 0.6881768953068592, "expected_wins": 0.22086062814788582, "expected_wins_optimal": 0.7822218516012173}
+
+TF/IDF and DAN v1.0 (DAN and TFIDF both get to buzz if confident but TFIDF only if under 50 words)
+{"first_acc": 0.0, "end_acc": 0.6877256317689531, "expected_wins": 0.2201636512123848, "expected_wins_optimal": 0.7821398508298285}
+
+
+December 10 2018:
+
+DAN Only
+{"first_acc": 0.0, "end_acc": 0.42193140794223827, "expected_wins": 0.12742574327151907, "expected_wins_optimal": 0.5845992400723761}
+
+Default TF/IDF first 50, then DAN buzzes
+{"first_acc": 0.0, "end_acc": 0.42193140794223827, "expected_wins": 0.15221777278922483, "expected_wins_optimal": 0.5845992400723761}
+
+Both models may buzz at any time
+{"first_acc": 0.0, "end_acc": 0.42193140794223827, "expected_wins": 0.1275973929588421, "expected_wins_optimal": 0.5845992400723761}
+
+DAN can guess after 55
+{"first_acc": 0.0, "end_acc": 0.286101083032491, "expected_wins": 0.1294559754032788, "expected_wins_optimal": 0.4949795221022722}
+
+Default TF/IDF first 55, then DAN buzzes
+{"first_acc": 0.0, "end_acc": 0.42193140794223827, "expected_wins": 0.1294559754032788, "expected_wins_optimal": 0.5845992400723761}
+
+Default TF/IDF first 45, then DAN buzzes
+{"first_acc": 0.0, "end_acc": 0.42193140794223827, "expected_wins": 0.1289600693738837, "expected_wins_optimal": 0.5845992400723761}

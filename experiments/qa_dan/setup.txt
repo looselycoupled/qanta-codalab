@@ -9,17 +9,11 @@ Install Libraries
 
 Download nltk components
 
-    import nltk
-    nltk.download('punkt')
+    python -c "import nltk; nltk.download('punkt'); nltk.download('averaged_perceptron_tagger')"
 
-
-Download torchtext for embeddings
+Download torchtext for embeddings if needed
 
     import torch
     import torch.nn as nn
     import torchtext.vocab as vocab
     glove = vocab.GloVe(name='6B', dim=200)
-
-Download misc dependencies
-
-    import
